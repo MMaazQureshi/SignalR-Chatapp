@@ -1,7 +1,21 @@
 ﻿"use strict";
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+var connection = new signalR.HubConnectionBuilder().withUrl("/websocket").withAutomaticReconnect().build();
+Object.defineProperty(WebSocket, 'OPEN', { value: 1, });
 
+async function start() {
+    try {
+        await connection.start();
+        console.assert(connection.state === signalR.HubConnectionState.Connected);
+        Pace.stop();
+        console.log("SignalR Connected.");
+    } catch (err) {
+        console.assert(connection.state === signalR.HubConnectionState.Disconnected);
+        console.log(err);
+        setTimeout(() => start(), 5000);
+    }
+};
+start()
 //Disable send button until connection is established
 document.getElementById("sendButton").disabled = true;
 
